@@ -1,9 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import App from './App';
+import Quote from './Quote';
 
 test('renders learn react link', () => {
-  const { getByText } = render(<App />);
-  const headerText = getByText(/Seinfeld Timer!/i);
+  const { getByText } = render(<Quote />);
+  const headerText = getByText(/Quote/i);
   expect(headerText).toBeInTheDocument();
 });
