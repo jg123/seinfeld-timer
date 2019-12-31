@@ -8,6 +8,10 @@
   color: white;
 }
 
+.timer-state {
+  cursor: pointer;
+}
+
 .timer-state--running {
   color: green;
 }
@@ -20,6 +24,16 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.buttons button {
+  font-size: 0.8em;
+}
+
+.edit-seconds input {
+  font-size: 1.5em;
+  margin: 0.75em 0;
+  max-width: 60px;
 }
 
 .buttons button {

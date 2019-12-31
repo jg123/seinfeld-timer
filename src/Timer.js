@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import Quote from "./Quote";
 
 import quotes from "./quotes.json";
@@ -22,40 +21,45 @@ const completed = () => {
   ).play();
 };
 
+const DEFAULT_SECONDS = 45;
+
 export default class Timer extends Component {
-  static propTypes = {
-    seconds: PropTypes.number
-  };
+  constructor(props) {
+    super(props);
 
-  static defaultProps = {
-    seconds: 45
-  };
-
-  state = {
-    seconds: this.props.seconds,
-    timerState: "timer-state--stopped",
-    quote: getRandomQuote()
-  };
+    const seconds =
+      parseInt(localStorage.getItem("seconds"), 10) || DEFAULT_SECONDS;
+    this.state = {
+      initialSeconds: seconds,
+      seconds,
+      isEditingSeconds: false,
+      timerState: "timer-state--stopped",
+      quote: getRandomQuote()
+    };
+  }
 
   tick = () => {
     const { seconds } = this.state;
-    if (seconds > 0) {
-      this.setState({ seconds: seconds - 1 });
+    const newSeconds = seconds - 1;
+    if (newSeconds > 0) {
+      this.setState({ seconds: newSeconds });
     } else {
+      this.setState({ seconds: 0 });
       this.stopTimer();
       completed();
     }
   };
 
   startTimer = () => {
+    const { seconds, initialSeconds } = this.state;
     clearInterval(this.timer);
     this.setState({
       timerState: "timer-state--running"
     });
-    if (this.state.seconds <= 0) {
+    if (seconds <= 0) {
       this.setState(
         {
-          seconds: this.props.seconds,
+          seconds: initialSeconds,
           quote: getRandomQuote()
         },
         () => (this.timer = setInterval(this.tick, 1000))
@@ -69,7 +73,7 @@ export default class Timer extends Component {
     clearInterval(this.timer);
     this.setState(
       {
-        seconds: this.props.seconds,
+        seconds: this.state.initialSeconds,
         timerState: "timer-state--running",
         quote: getRandomQuote()
       },
@@ -84,8 +88,37 @@ export default class Timer extends Component {
     });
   };
 
+  editSeconds = () => {
+    this.setState({
+      isEditingSeconds: true
+    });
+  };
+
+  saveSeconds = event => {
+    if (event.key === "Enter") {
+      const { seconds, initialSeconds } = this.state;
+      const newSeconds = event.target.value;
+      localStorage.setItem("seconds", newSeconds);
+      this.setState({
+        isEditingSeconds: false,
+        initialSeconds: newSeconds
+      });
+      if (seconds === initialSeconds || newSeconds < seconds) {
+        this.setState({
+          seconds: newSeconds
+        });
+      }
+    }
+  };
+
   render() {
-    const { seconds, timerState, quote } = this.state;
+    const {
+      seconds,
+      timerState,
+      quote,
+      isEditingSeconds,
+      initialSeconds
+    } = this.state;
     return (
       <>
         <div className="buttons">
@@ -93,7 +126,20 @@ export default class Timer extends Component {
           <button onClick={this.stopTimer}>Stop</button>
           <button onClick={this.restartTimer}>Restart</button>
         </div>
-        <h2 className={timerState}>{seconds}</h2>
+        {isEditingSeconds ? (
+          <div className="edit-seconds">
+            <input
+              type="text"
+              autoFocus
+              defaultValue={initialSeconds}
+              onKeyPress={this.saveSeconds}
+            />
+          </div>
+        ) : (
+          <h2 className={`timer-state ${timerState}`} onClick={this.editSeconds}>
+            {seconds}
+          </h2>
+        )}
         <Quote quote={quote} />
       </>
     );
